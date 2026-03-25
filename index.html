@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Index Prescript - Limbus Company</title>
+    <style>
+        /* Estilo Dark e Industrial */
+        /* --- FUNDO PRETO ABSOLUTO --- */
+body { 
+    background: #000000; /* Preto total */
+    color: #04174b; 
+    font-family: 'Courier New', Courier, monospace; 
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    overflow-x: hidden;
+        }
+
+   
+    body::before {
+        content: "";
+        position: fixed;
+        top: -100%; left: -100%; width: 300%; height: 300%;
+        background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
+        opacity: 0.05;
+        animation: noise-animation 0.2s infinite;
+        pointer-events: none;
+        z-index: 1;
+    }
+    @keyframes noise-animation {
+        0% { transform: translate(0,0); }
+        10% { transform: translate(-1%,-2%); }
+        100% { transform: translate(1%,2%); }
+    }
+    
+    /* --- CONTEÚDO PRINCIPAL (ESTILO INDEX) --- */
+    .main-content {
+        flex: 1;
+        display: flex; 
+        justify-content: center; 
+        align-items: center;
+        z-index: 2;
+        padding: 20px
+    }
+    .terminal { 
+    border: 1px solid #041742e3; 
+    padding: 100px; 
+    width: 100%; 
+    max-width: 1200px; 
+    background: #050505; /* Um tom quase imperceptível acima do preto puro */
+    box-shadow: 0 0 30px rgba(9, 54, 138, 0.808); /* Brilho suave */
+    position: middle;
+    }
+
+        /* Efeito de Scanline (linhas de TV antiga) */
+        .terminal::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        h1 { font-size: 1.2rem; letter-spacing: 4px; border-bottom: 1px solid #161511; padding-bottom: 10px; margin-top: 0; }
+
+        #prescript-display { 
+            margin: 30px 0; 
+            font-size: 1.1rem; 
+            line-height: 1.6;
+            min-height: 100px;
+            color: #e0e0e0;
+        }
+
+        button { 
+            background: #fffefb; 
+            color: #000; 
+            border: none; 
+            padding: 10px 25px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-family: inherit;
+            transition: 0.3s;
+            letter-spacing: 2px;
+        }
+
+        button:hover { background: #fff; box-shadow: 0 0 10px #fff; }
+        button:disabled { background: #444; color: #888; cursor: not-allowed; }
+
+        .cursor { border-right: 8px solid #d4af37; animation: blink 0.7s infinite; }
+        @keyframes blink { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
+    footer {
+    background: #000000; /* Mantém a continuidade do preto */
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+    padding: 30px 0;
+    width: 100%;
+    text-align: center;
+    margin-top: auto;
+    }
+
+        .footer-logo {
+            max-width: 284px; /* Ajuste o tamanho máximo da imagem */
+            height: 242px; /* Mantém a proporção da imagem */
+            opacity: 0.6; /* Deixa a imagem um pouco transparente, mais sutil */
+            transition: opacity 0.3s ease; /* Efeito suave ao passar o mouse */
+        }
+
+        .footer-logo:hover {
+            opacity: 1; /* Fica totalmente visível ao passar o mouse */
+
+    }
+
+    </style>
+    
+</head>
+<body>
+
+<div class="terminal">
+    <h1>[Hermes-Device]</h1>
+    <p id="prescript-display"><span id="text">Aguardando transmissão...</span><span class="cursor"></span></p>
+    <button id="generate-btn">Receber</button>
+</div>
+<footer>
+    <img src="index.png" alt="Logo do Index - Limbus Company" class="footer-logo">
+</footer>
+<script>
+    const conditions = ["Ao meio-dia", "Se avistar uma pena negra", "Após subir treze degraus", "Se ouvir o som de engrenagens", "Quando o vento soprar do Norte", "Se o café esfriar antes do esperado"];
+    const actions = ["entregue uma faca cega", "recite seus arrependimentos", "deixe uma gota de duvida", "desenhe o símbolo de uma ave","desenhe um trapézio", "traga um copo de água morna" ,"queime um pedaço de pano", "ofereça uma moeda dobrada"];
+    const targets = ["para o zelador do Distrito", "na superfice mais proxima", "para aquele que não vê", "no centro do ninho", "sob o viaduto de ferro", "ao cavaleiro a sua esquerda"];
+
+    const btn = document.getElementById('generate-btn');
+    const textElement = document.getElementById('text');
+    let isTyping = false;
+
+// --- LÓGICA DE ÁUDIO ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playTypeSound() {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.type = 'square'; // Som ruidoso/mecânico
+        oscillator.frequency.setValueAtTime(7000, audioCtx.currentTime); // Tom grave
+        oscillator.frequency.exponentialRampToValueAtTime(90, audioCtx.currentTime + 0.05);
+
+        gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime); // Volume baixo
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.05);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.05);
+    }
+    // -----------------------
+
+    function typeWriter(text, i = 0) {
+        if (i < text.length) {
+            textElement.innerHTML += text.charAt(i);
+            
+            // Toca o som apenas se não for um espaço vazio
+            if (text.charAt(i) !== " ") {
+                playTypeSound();
+            }
+
+            setTimeout(() => typeWriter(text, i + 1), 50); 
+        } else {
+            isTyping = false;
+            btn.disabled = false;
+            textElement.innerHTML += "<br><br><span style='color: #ff4500; text-shadow: 0 0 5px #ff4500;'>Conclua ate o final do dia.</span>";
+        }
+    }
+
+    function generate() {
+        if (isTyping) return;
+        
+        // Ativa o contexto de áudio (navegadores bloqueiam som sem interação prévia)
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+
+        isTyping = true;
+        btn.disabled = true;
+        textElement.innerHTML = ""; 
+
+        const c = conditions[Math.floor(Math.random() * conditions.length)];
+        const a = actions[Math.floor(Math.random() * actions.length)];
+        const t = targets[Math.floor(Math.random() * targets.length)];
+        
+        const fullMessage = `${c}, ${a} ${t}.`;
+        
+        typeWriter(fullMessage);
+    }
+
+    btn.addEventListener('click', generate);
+</script>
+
+</body>
+</html>
