@@ -1,0 +1,69 @@
+   const conditions = ["Ao meio-dia", "Se avistar uma pena negra", "Após subir treze degraus", "Se ouvir o som de engrenagens", "Quando o vento soprar do Norte", "Se o café esfriar antes do esperado"];
+    const actions = ["entregue uma faca cega", "recite seus arrependimentos", "deixe uma gota de duvida", "desenhe o símbolo de uma ave","desenhe um trapézio", "traga um copo de água morna" ,"queime um pedaço de pano", "ofereça uma moeda dobrada"];
+    const targets = ["para o zelador do Distrito", "na superfice mais proxima", "para aquele que não vê", "no centro do ninho", "sob o viaduto de ferro", "ao cavaleiro a sua esquerda"];
+
+    const btn = document.getElementById('generate-btn');
+    const textElement = document.getElementById('text');
+    let isTyping = false;
+
+// --- LÓGICA DE ÁUDIO ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playTypeSound() {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.type = 'square'; // Som ruidoso/mecânico
+        oscillator.frequency.setValueAtTime(7000, audioCtx.currentTime); // Tom grave
+        oscillator.frequency.exponentialRampToValueAtTime(90, audioCtx.currentTime + 0.05);
+
+        gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime); // Volume baixo
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.05);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.05);
+    }
+    // -----------------------
+
+    function typeWriter(text, i = 0) {
+        if (i < text.length) {
+            textElement.innerHTML += text.charAt(i);
+            
+            // Toca o som apenas se não for um espaço vazio
+            if (text.charAt(i) !== " ") {
+                playTypeSound();
+            }
+
+            setTimeout(() => typeWriter(text, i + 1), 50); 
+        } else {
+            isTyping = false;
+            btn.disabled = false;
+            textElement.innerHTML += "<br><br><span style='color: #ff4500; text-shadow: 0 0 5px #ff4500;'>Conclua ate o final do dia.</span>";
+        }
+    }
+
+    function generate() {
+        if (isTyping) return;
+        
+        // Ativa o contexto de áudio (navegadores bloqueiam som sem interação prévia)
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+
+        isTyping = true;
+        btn.disabled = true;
+        textElement.innerHTML = ""; 
+
+        const c = conditions[Math.floor(Math.random() * conditions.length)];
+        const a = actions[Math.floor(Math.random() * actions.length)];
+        const t = targets[Math.floor(Math.random() * targets.length)];
+        
+        const fullMessage = `${c}, ${a} ${t}.`;
+        
+        typeWriter(fullMessage);
+    }
+
+    btn.addEventListener('click', generate);
